@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codi Campus // Escape Room Digital UIB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --blue-deep:#0A2540;
+    --blue-mid:#123A66;
+    --blue-line:#1E4E82;
+    --cyan:#2FD3E0;
+    --amber:#FFB454;
+    --coral:#FF6B5E;
+    --bg:#EEF2F6;
+    --paper:#FFFFFF;
+    --ink:#0E1520;
+    --ink-soft:#4A5A6B;
+    --line:#D7E0E8;
+    --radius:14px;
+    --mono:'Space Grotesk', 'Segoe UI', sans-serif;
+    --sans:'Inter', 'Segoe UI', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(47,211,224,0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,180,84,0.08), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    line-height:1.5;
+  }
+
+  h1,h2,h3{font-family:var(--mono); margin:0; letter-spacing:-0.01em;}
+
+  button{font-family:var(--sans); cursor:pointer;}
+
+  /* ---------- Layout shell ---------- */
+  .app{
+    max-width:920px;
+    margin:0 auto;
+    padding:28px 20px 64px;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 20px;
+    background:var(--blue-deep);
+    color:#fff;
+    border-radius:var(--radius);
+    margin-bottom:22px;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:9px;
+    background:linear-gradient(135deg, var(--cyan), var(--blue-mid));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-weight:700; font-size:15px; color:var(--blue-deep);
+  }
+  .brand-text{font-family:var(--mono); font-weight:600; font-size:15px;}
+  .brand-text span{display:block; font-family:var(--sans); font-weight:400; font-size:11.5px; color:#9FC7E8;}
+  .stats{display:flex; gap:18px; font-family:var(--mono); font-size:13px; color:#CFE6F7;}
+  .stats b{color:#fff; font-size:15px; display:block; font-weight:600;}
+  .stats small{font-family:var(--sans); font-size:10.5px; letter-spacing:0.03em; color:#8FB6D9;}
+
+  /* ---------- Route map ---------- */
+  .route{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:0 4px 26px;
+    position:relative;
+  }
+  .route::before{
+    content:"";
+    position:absolute; top:19px; left:22px; right:22px; height:2px;
+    background:var(--line); z-index:0;
+  }
+  .stop{
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    flex:1;
+  }
+  .stop .dot{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--paper); border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px;
+    transition:border-color .25s ease, background .25s ease, transform .2s ease;
+  }
+  .stop.done .dot{background:var(--blue-deep); border-color:var(--blue-deep); color:#fff;}
+  .stop.active .dot{border-color:var(--cyan); box-shadow:0 0 0 5px rgba(47,211,224,0.18); transform:scale(1.05);}
+  .stop .label{font-size:11px; color:var(--ink-soft); text-align:center; max-width:92px; font-weight:600;}
+  .stop.active .label{color:var(--blue-deep);}
+
+  /* ---------- Cards / panels ---------- */
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--cyan), var(--blue-mid));
+  }
+
+  .kicker{
+    font-family:var(--mono); font-size:12.5px; font-weight:600;
+    color:var(--blue-mid); margin-bottom:6px;
+  }
+  .panel h2{font-size:25px; margin-bottom:10px; color:var(--blue-deep);}
+  .lede{color:var(--ink-soft); font-size:15px; max-width:60ch; margin-bottom:20px;}
+
+  /* ---------- Intro screen ---------- */
+  .intro-hero{
+    display:grid; grid-template-columns:1.15fr 0.85fr; gap:28px; align-items:center;
+  }
+  .terminal{
+    background:var(--blue-deep); border-radius:16px; padding:20px 22px;
+    font-family:var(--mono); font-size:13px; color:#B9DEF2; min-height:190px;
+  }
+  .terminal .ln{opacity:0; animation:typein .4s forwards;}
+  .terminal .prompt{color:var(--cyan);}
+  @keyframes typein{ to{opacity:1;} }
+  .cursor-blink{display:inline-block; width:8px; height:14px; background:var(--cyan); margin-left:2px; animation:blink 1s step-end infinite; vertical-align:middle;}
+  @keyframes blink{ 50%{opacity:0;} }
+
+  .btn{
+    border:none; border-radius:11px; padding:13px 22px;
+    font-weight:600; font-size:14.5px;
+    background:var(--blue-deep); color:#fff;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn:hover{background:var(--blue-mid); transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.accent{background:var(--cyan); color:var(--blue-deep);}
+  .btn.accent:hover{background:#59DCE7;}
+  .btn.ghost{background:transparent; color:var(--blue-mid); border:1.5px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--blue-mid);}
+  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+
+  /* ---------- Room controls row ---------- */
+  .room-controls{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:26px; gap:12px; flex-wrap:wrap;
+  }
+  .hint-box{
+    font-size:13.5px; color:var(--ink-soft); background:#FBF3E7; border:1px solid #F0DCB8;
+    padding:10px 14px; border-radius:10px; max-width:420px; display:none;
+  }
+  .hint-box.show{display:block;}
+  .feedback{
+    font-size:13.5px; font-weight:600; padding:10px 14px; border-radius:10px;
+    display:none; margin-top:16px;
+  }
+  .feedback.show{display:block;}
+  .feedback.bad{background:#FDEDEC; color:#B3261E; display:block;}
+  .feedback.good{background:#E8F7EE; color:#1B7A43; display:block;}
+
+  /* ---------- Room 1: search interface ---------- */
+  .search-mock{
+    border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:18px;
+  }
+  .search-mock .bar{background:#F4F7FA; padding:12px 16px; display:flex; gap:10px; align-items:center; border-bottom:1px solid var(--line);}
+  .search-mock .bar input{
+    flex:1; border:1px solid var(--line); border-radius:20px; padding:9px 14px; font-size:13.5px; color:var(--ink-soft); background:#fff;
+  }
+  .search-mock .dots{display:flex; gap:5px;}
+  .search-mock .dots span{width:9px; height:9px; border-radius:50%; background:#D7E0E8;}
+  .option-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:18px;}
+  @media(max-width:640px){.option-grid{grid-template-columns:1fr;} .intro-hero{grid-template-columns:1fr;}}
+  .opt-card{
+    border:1.5px solid var(--line); border-radius:12px; padding:14px; text-align:left;
+    background:#fff; font-size:13.5px; color:var(--ink); line-height:1.45;
+  }
+  .opt-card:hover{border-color:var(--cyan);}
+  .opt-card.selected{border-color:var(--blue-deep); background:#F0F6FB;}
+  .opt-card .tag{
+    display:inline-block; font-family:var(--mono); font-size:10.5px; font-weight:600;
+    color:var(--blue-mid); background:#E4EEF7; border-radius:6px; padding:2px 7px; margin-bottom:8px;
+  }
+
+  /* ---------- Room 2: court sorter ---------- */
+  .court{display:flex; flex-direction:column; gap:12px; margin-bottom:16px;}
+  .claim{
+    border:1.5px solid var(--line); border-radius:12px; padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background:#fff;
+  }
+  .claim p{margin:0; font-size:13.5px; max-width:52ch;}
+  .claim .choices{display:flex; gap:8px; flex-shrink:0;}
+  .pill{
+    border:1.5px solid var(--line); background:#fff; border-radius:20px; padding:7px 14px;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .pill.mite.active{background:var(--coral); border-color:var(--coral); color:#fff;}
+  .pill.real.active{background:#1B7A43; border-color:#1B7A43; color:#fff;}
+
+  /* ---------- Room 3: design tool ---------- */
+  .canvas-mock{
+    border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px;
+    background:
+      linear-gradient(#fff 1px, transparent 1px) 0 0/100% 22px,
+      linear-gradient(90deg, #fff 1px, transparent 1px) 0 0/22px 100%,
+      #F7FAFC;
+  }
+  .shape-row{display:flex; gap:14px; justify-content:center; margin-bottom:20px;}
+  .shape-row div{width:44px; height:44px; opacity:.85;}
+  .s1{border-radius:50%; background:var(--cyan);}
+  .s2{background:var(--amber);}
+  .s3{background:var(--coral); clip-path:polygon(50% 0,100% 100%,0 100%);}
+  .s4{border:3px solid var(--blue-deep); background:transparent; border-radius:8px;}
+  .statement-list{display:flex; flex-direction:column; gap:10px;}
+  .statement{
+    border:1.5px solid var(--line); border-radius:12px; padding:13px 16px; background:#fff;
+    font-size:13.5px; text-align:left;
+  }
+  .statement:hover{border-color:var(--cyan);}
+  .hidden-reveal{
+    display:none; text-align:center; padding:18px; border-radius:12px;
+    background:var(--blue-deep); color:#fff; font-family:var(--mono); margin-top:16px; letter-spacing:.06em;
+  }
+  .hidden-reveal.show{display:block;}
+
+  /* ---------- Room 4: inbox ---------- */
+  .mail-app{display:grid; grid-template-columns:170px 1fr; border:1px solid var(--line); border-radius:14px; overflow:hidden; min-height:270px; margin-bottom:16px;}
+  @media(max-width:640px){.mail-app{grid-template-columns:1fr;}}
+  .mail-folders{background:#F4F7FA; border-right:1px solid var(--line); padding:14px 10px;}
+  .folder{
+    display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; font-size:13px; font-weight:600;
+    color:var(--ink-soft); margin-bottom:3px;
+  }
+  .folder:hover{background:#E9EFF4;}
+  .folder.active{background:var(--blue-deep); color:#fff;}
+  .mail-list{padding:8px;}
+  .mail-item{
+    padding:12px 14px; border-radius:10px; border:1px solid transparent; margin-bottom:6px;
+    display:flex; justify-content:space-between; gap:10px; align-items:center; font-size:13px;
+  }
+  .mail-item:hover{background:#F4F7FA;}
+  .mail-item .from{font-weight:700; color:var(--ink);}
+  .mail-item .subj{color:var(--ink-soft); font-weight:400;}
+  .mail-item .move{font-size:11.5px; padding:6px 10px; border-radius:16px; background:var(--cyan); color:var(--blue-deep); font-weight:700; border:none;}
+  .empty-note{color:var(--ink-soft); font-size:13px; padding:18px; text-align:center;}
+
+  /* ---------- Room 5 ---------- */
+  .final-grid{display:flex; flex-direction:column; gap:10px;}
+
+  /* ---------- Victory ---------- */
+  .victory{text-align:center; padding:20px 6px;}
+  .badge{
+    width:78px; height:78px; border-radius:50%; margin:0 auto 18px;
+    background:conic-gradient(from 200deg, var(--cyan), var(--blue-mid), var(--amber), var(--cyan));
+    display:flex; align-items:center; justify-content:center; font-size:32px;
+  }
+  .victory h2{font-size:27px; color:var(--blue-deep); margin-bottom:8px;}
+  .victory .lede{margin:0 auto 22px;}
+  .campus-card{
+    background:var(--blue-deep); color:#fff; border-radius:16px; padding:26px 28px;
+    text-align:left; display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-top:10px;
+  }
+  .campus-card .cc-text h3{font-size:17px; margin-bottom:6px;}
+  .campus-card .cc-text p{font-size:13.5px; color:#BEDCEF; margin:0 0 14px; max-width:46ch;}
+  .campus-card a.btn{display:inline-block; text-decoration:none;}
+  .final-stats{display:flex; justify-content:center; gap:28px; margin:22px 0; font-family:var(--mono);}
+  .final-stats div{text-align:center;}
+  .final-stats b{font-size:22px; color:var(--blue-deep); display:block;}
+  .final-stats small{color:var(--ink-soft); font-size:11px;}
+
+  .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  button:focus-visible, .opt-card:focus-visible, .statement:focus-visible, .pill:focus-visible, .mail-item:focus-visible, .folder:focus-visible{
+    outline:3px solid var(--cyan); outline-offset:2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CD</div>
+      <div class="brand-text">Codi Campus<span>Escape Room · Competència Digital UIB</span></div>
+    </div>
+    <div class="stats">
+      <div><b id="timerDisplay">00:00</b><small>TEMPS</small></div>
+      <div><b id="attemptsDisplay">0</b><small>INTENTS</small></div>
+      <div><b id="roomDisplay">0/5</b><small>SALES</small></div>
+    </div>
+  </div>
+
+  <div class="route" id="routeMap" aria-hidden="true"></div>
+
+  <div class="panel" id="gamePanel"></div>
+
+</div>
+
+<script>
+(function(){
+
+  /* ---------------- State ---------------- */
+  const state = {
+    started:false,
+    currentRoom:0,        // 0 = intro, 1..5 = rooms, 6 = victory
+    unlocked:1,
+    attempts:0,
+    seconds:0,
+    timerId:null,
+    room1:{selected:null},
+    room2:{answers:{}},
+    room3:{selected:null, revealed:false},
+    room4:{folder:'inbox'},
+    room5:{selected:null}
+  };
+
+  const ROOMS = [
+    {key:'intro', label:'Inici', icon:'▣'},
+    {key:'r1', label:'Cerca i dades', icon:'🔎'},
+    {key:'r2', label:'Comunicació', icon:'💬'},
+    {key:'r3', label:'Creació', icon:'✎'},
+    {key:'r4', label:'Seguretat', icon:'🛡'},
+    {key:'r5', label:'Resolució', icon:'⚙'},
+    {key:'end', label:'Sortida', icon:'★'}
+  ];
+
+  const panel = document.getElementById('gamePanel');
+  const routeMap = document.getElementById('routeMap');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const attemptsDisplay = document.getElementById('attemptsDisplay');
+  const roomDisplay = document.getElementById('roomDisplay');
+
+  /* ---------------- Timer ---------------- */
+  function startTimer(){
+    if(state.timerId) return;
+    state.timerId = setInterval(()=>{
+      state.seconds++;
+      const m = String(Math.floor(state.seconds/60)).padStart(2,'0');
+      const s = String(state.seconds%60).padStart(2,'0');
+      timerDisplay.textContent = `${m}:${s}`;
+    },1000);
+  }
+  function stopTimer(){
+    if(state.timerId){ clearInterval(state.timerId); state.timerId = null; }
+  }
+
+  function registerAttempt(){
+    state.attempts++;
+    attemptsDisplay.textContent = state.attempts;
+  }
+
+  /* ---------------- Route map render ---------------- */
+  function renderRoute(){
+    routeMap.innerHTML = '';
+    // route shows stops 1..5 only (intro/end excluded from the visual path)
+    for(let i=1;i<=5;i++){
+      const r = ROOMS[i];
+      const stop = document.createElement('div');
+      stop.className = 'stop';
+      if(i < state.currentRoom || state.currentRoom === 6) stop.classList.add('done');
+      if(i === state.currentRoom) stop.classList.add('active');
+      stop.innerHTML = `<div class="dot">${i < state.currentRoom || state.currentRoom===6 ? '✓' : r.icon}</div><div class="label">${r.label}</div>`;
+      routeMap.appendChild(stop);
+    }
+    let solved = 0;
+    if(state.currentRoom===6) solved = 5;
+    else if(state.currentRoom>=1) solved = state.currentRoom - 1;
+    roomDisplay.textContent = `${solved}/5`;
+  }
+
+  function goTo(roomNum){
+    state.currentRoom = roomNum;
+    renderRoute();
+    render();
+  }
+
+  /* ---------------- Render dispatcher ---------------- */
+  function render(){
+    if(state.currentRoom===0) renderIntro();
+    else if(state.currentRoom===1) renderRoom1();
+    else if(state.currentRoom===2) renderRoom2();
+    else if(state.currentRoom===3) renderRoom3();
+    else if(state.currentRoom===4) renderRoom4();
+    else if(state.currentRoom===5) renderRoom5();
+    else if(state.currentRoom===6) renderVictory();
+  }
+
+  /* ---------------- Intro ---------------- */
+  function renderIntro(){
+    panel.innerHTML = `
+      <div class="intro-hero">
+        <div>
+          <div class="kicker">SISTEMA D'ACCÉS · AULA DIGITAL UIB</div>
+          <h2>Has quedat bloquejat fora del teu nou curs</h2>
+          <p class="lede">El campus virtual t'ha detectat com a usuari nou i ha activat un protocol de verificació. Per obtenir les claus d'accés complet, hauràs de superar 5 sales, cadascuna lligada a una àrea de la teva competència digital. Sense pressa, però sense saltar-te cap pas: cada sala es desbloqueja amb l'anterior resolta.</p>
+          <button class="btn accent" id="startBtn">Iniciar verificació</button>
+        </div>
+        <div class="terminal" id="terminalBox"></div>
+      </div>
+    `;
+    const lines = [
+      '<span class="prompt">campus@uib:~$</span> connectant amb Aula Digital...',
+      '<span class="prompt">campus@uib:~$</span> usuari no verificat',
+      '<span class="prompt">campus@uib:~$</span> carregant protocol de 5 sales',
+      '<span class="prompt">campus@uib:~$</span> esperant inici<span class="cursor-blink"></span>'
+    ];
+    const box = document.getElementById('terminalBox');
+    lines.forEach((l,i)=>{
+      const div = document.createElement('div');
+      div.className = 'ln';
+      div.style.animationDelay = (i*0.45)+'s';
+      div.innerHTML = l;
+      box.appendChild(div);
+    });
+    document.getElementById('startBtn').addEventListener('click', ()=>{
+      startTimer();
+      goTo(1);
+    });
+  }
+
+  /* ---------------- Room 1: Cerca i gestió d'informació ---------------- */
+  const R1_OPTIONS = [
+    {id:'a', tag:'Filtres', text:'Conèixer els operadors i filtres de la interfície permet obtenir resultats més precisos i rellevants.', correct:true},
+    {id:'b', tag:'Aparença', text:'La interfície només serveix per canviar el color de fons del cercador.', correct:false},
+    {id:'c', tag:'Velocitat', text:'Entendre la interfície fa que l\'ordinador processi les cerques del maquinari més ràpidament.', correct:false},
+    {id:'d', tag:'Popularitat', text:'Conèixer la interfície només serveix per veure quants anuncis apareixen.', correct:false}
+  ];
+
+  function renderRoom1(){
+    panel.innerHTML = `
+      <div class="kicker">SALA 1 · ÀREA 1 — CERCA I GESTIÓ D'INFORMACIÓ I DADES</div>
+      <h2>La consola de cerca està bloquejada</h2>
+      <p class="lede">Per desxifrar la primera clau, tria l'afirmació que explica per què és important conèixer la interfície d'un cercador abans de fer una consulta.</p>
+      <div class="search-mock">
+        <div class="bar"><div class="dots"><span></span><span></span><span></span></div><input disabled placeholder="cerca.uib.cat/consulta..."></div>
+        <div class="option-grid" id="r1grid"></div>
+      </div>
+      <div class="feedback" id="r1feedback"></div>
+      <div class="room-controls">
+        <button class="btn ghost" id="r1hintBtn">Necessito una pista</button>
+        <button class="btn accent" id="r1submit" disabled>Validar selecció</button>
+      </div>
+      <div class="hint-box" id="r1hint">Pensa en què canvia realment quan saps utilitzar bé els paràmetres d'un cercador: la qualitat del maquinari o la qualitat dels resultats?</div>
+    `;
+    const grid = document.getElementById('r1grid');
+    R1_OPTIONS.forEach(opt=>{
+      const card = document.createElement('button');
+      card.className = 'opt-card';
+      card.type = 'button';
+      card.tabIndex = 0;
+      card.innerHTML = `<span class="tag">${opt.tag}</span><div>${opt.text}</div>`;
+      card.addEventListener('click', ()=>{
+        document.querySelectorAll('#r1grid .opt-card').forEach(c=>c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.room1.selected = opt.id;
+        document.getElementById('r1submit').disabled = false;
+      });
+      grid.appendChild(card);
+    });
+    document.getElementById('r1hintBtn').addEventListener('click', ()=>{
+      document.getElementById('r1hint').classList.add('show');
+    });
+    document.getElementById('r1submit').addEventListener('click', ()=>{
+      registerAttempt();
+      const chosen = R1_OPTIONS.find(o=>o.id===state.room1.selected);
+      const fb = document.getElementById('r1feedback');
+      if(chosen && chosen.correct){
+        fb.className = 'feedback good show';
+        fb.textContent = 'Correcte. Saber usar els filtres i operadors millora la precisió dels resultats obtinguts. Clau 1 desbloquejada.';
+        setTimeout(()=>goTo(2), 1100);
+      } else {
+        fb.className = 'feedback bad show';
+        fb.textContent = 'Aquesta opció no obre la consola. Torna-ho a pensar: quin efecte té realment conèixer la interfície sobre els resultats?';
+      }
+    });
+  }
+
+  /* ---------------- Room 2: Comunicació i col·laboració ---------------- */
+  const R2_CLAIMS = [
+    {id:'c1', text:'Publicar missatges difamatoris o insultants en una xarxa social pot donar lloc a una demanda civil per danys i perjudicis.', answer:'real'},
+    {id:'c2', text:'Els insults o calúmnies greus fets a xarxes socials poden ser constitutius de delicte.', answer:'real'},
+    {id:'c3', text:'Les xarxes socials són un espai privat, així que res del que hi escrivim té conseqüències legals.', answer:'mite'},
+    {id:'c4', text:'Esborrar un missatge ofensiu just després de publicar-lo elimina qualsevol responsabilitat legal.', answer:'mite'}
+  ];
+
+  function renderRoom2(){
+    panel.innerHTML = `
+      <div class="kicker">SALA 2 · ÀREA 2 — COMUNICACIÓ I COL·LABORACIÓ</div>
+      <h2>Jutjat digital: mite o realitat?</h2>
+      <p class="lede">Un missatge ofensiu ha circulat per un grup de classe. Classifica cada afirmació legal com a MITE o REALITAT per obrir l'expedient.</p>
+      <div class="court" id="r2list"></div>
+      <div class="feedback" id="r2feedback"></div>
+      <div class="room-controls">
+        <button class="btn ghost" id="r2hintBtn">Necessito una pista</button>
+        <button class="btn accent" id="r2submit">Tancar veredicte</button>
+      </div>
+      <div class="hint-box" id="r2hint">La llei sí que arriba a les xarxes socials: difamar o insultar públicament té conseqüències civils i, en casos greus, penals. No hi ha "espai lliure d'impunitat".</div>
+    `;
+    const list = document.getElementById('r2list');
+    R2_CLAIMS.forEach(c=>{
+      const row = document.createElement('div');
+      row.className = 'claim';
+      row.innerHTML = `
+        <p>${c.text}</p>
+        <div class="choices">
+          <button class="pill mite" type="button" data-id="${c.id}" data-val="mite">Mite</button>
+          <button class="pill real" type="button" data-id="${c.id}" data-val="real">Realitat</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+    document.querySelectorAll('#r2list .pill').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.id;
+        state.room2.answers[id] = btn.dataset.val;
+        document.querySelectorAll(`.pill[data-id="${id}"]`).forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    document.getElementById('r2hintBtn').addEventListener('click', ()=>{
+      document.getElementById('r2hint').classList.add('show');
+    });
+    document.getElementById('r2submit').addEventListener('click', ()=>{
+      registerAttempt();
+      const fb = document.getElementById('r2feedback');
+      const allAnswered = R2_CLAIMS.every(c => state.room2.answers[c.id]);
+      if(!allAnswered){
+        fb.className = 'feedback bad show';
+        fb.textContent = 'Encara queden afirmacions sense classificar.';
+        return;
+      }
+      const allCorrect = R2_CLAIMS.every(c => state.room2.answers[c.id] === c.answer);
+      if(allCorrect){
+        fb.className = 'feedback good show';
+        fb.textContent = 'Veredicte correcte. La comunicació digital té conseqüències reals. Clau 2 desbloquejada.';
+        setTimeout(()=>goTo(3), 1100);
+      } else {
+        fb.className = 'feedback bad show';
+        fb.textContent = 'Alguna classificació no és correcta. Revisa quines afirmacions descriuen conseqüències legals reals.';
+      }
+    });
+  }
+
+  /* ---------------- Room 3: Creació de continguts digitals ---------------- */
+  const R3_STATEMENTS = [
+    {id:'s1', text:'No tenir en compte cap estàndard de qualitat a l\'hora de publicar un contingut.', correct:false},
+    {id:'s2', text:'Complir els estàndards de qualitat i optar pel format digital més adequat.', correct:true},
+    {id:'s3', text:'Ignorar la selecció de formats digitals i enfocar-se únicament a la difusió massiva.', correct:false},
+    {id:'s4', text:'No preocupar-se per la qualitat del contingut, ja que la visibilitat està garantida pels mateixos motors de cerca.', correct:false}
+  ];
+
+  function renderRoom3(){
+    panel.innerHTML = `
+      <div class="kicker">SALA 3 · ÀREA 3 — CREACIÓ DE CONTINGUTS DIGITALS</div>
+      <h2>El taulell de publicació amaga una imatge</h2>
+      <p class="lede">Quina d'aquestes accions és fonamental per garantir la visibilitat dels continguts digitals a la xarxa? Toca l'afirmació <strong>correcta</strong> per revelar la imatge oculta.</p>
+      <div class="canvas-mock">
+        <div class="shape-row"><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="s4"></div></div>
+        <div class="statement-list" id="r3list"></div>
+        <div class="hidden-reveal" id="r3reveal">◆ IMATGE DESBLOQUEJADA ◆<br>CLAU_03 · CONTINGUT DIGITAL VALIDAT</div>
+      </div>
+      <div class="feedback" id="r3feedback"></div>
+      <div class="room-controls">
+        <button class="btn ghost" id="r3hintBtn">Necessito una pista</button>
+        <button class="btn accent" id="r3continue" style="display:none;">Continuar a la sala 4</button>
+      </div>
+      <div class="hint-box" id="r3hint">La visibilitat d'un contingut no depèn de publicar-lo a qualsevol lloc o del volum de difusió: depèn de com de bé s'ha preparat. Pensa en qualitat i format.</div>
+    `;
+    const list = document.getElementById('r3list');
+    R3_STATEMENTS.forEach(s=>{
+      const btn = document.createElement('button');
+      btn.className = 'statement';
+      btn.type = 'button';
+      btn.textContent = s.text;
+      btn.addEventListener('click', ()=>{
+        registerAttempt();
+        const fb = document.getElementById('r3feedback');
+        if(s.correct){
+          document.getElementById('r3reveal').classList.add('show');
+          fb.className = 'feedback good show';
+          fb.textContent = 'Exacte: complir els estàndards de qualitat i triar bé el format és el que fa visible un contingut. Clau 3 desbloquejada.';
+          document.querySelectorAll('#r3list .statement').forEach(b=>b.disabled=true);
+          document.getElementById('r3continue').style.display = 'inline-block';
+        } else {
+          fb.className = 'feedback bad show';
+          fb.textContent = 'Aquesta acció no millora la visibilitat del contingut. Prova amb una altra.';
+        }
+      });
+      list.appendChild(btn);
+    });
+    document.getElementById('r3hintBtn').addEventListener('click', ()=>{
+      document.getElementById('r3hint').classList.add('show');
+    });
+    document.getElementById('r3continue').addEventListener('click', ()=> goTo(4));
+  }
+
+  /* ---------------- Room 4: Seguretat ---------------- */
+  const R4_FOLDERS = [
+    {id:'inbox', label:'📥 Safata d\'entrada'},
+    {id:'spam', label:'🚫 No desitjat'},
+    {id:'trash', label:'🗑 Paperera'},
+    {id:'sent', label:'📤 Enviats'}
+  ];
+  const R4_MAIL = {
+    inbox: [
+      {from:'Aula Digital UIB', subj:'Recordatori: entrega de la pràctica 3'},
+      {from:'Biblioteca UIB', subj:'El teu préstec venç demà'}
+    ],
+    spam: [
+      {from:'Secretaria Acadèmica UIB', subj:'IMPORTANT: verificació d\'accés al nou curs', important:true},
+      {from:'oferta-exclusiva@promos.net', subj:'Guanya un premi ara mateix'}
+    ],
+    trash: [
+      {from:'Newsletter esports', subj:'Resultats de la lliga interna'}
+    ],
+    sent: [
+      {from:'Jo', subj:'Consulta sobre horaris de tutoria'}
+    ]
+  };
+
+  function renderRoom4(){
+    panel.innerHTML = `
+      <div class="kicker">SALA 4 · ÀREA 4 — SEGURETAT</div>
+      <h2>Falta un correu a la safata d'entrada</h2>
+      <p class="lede">La Secretaria Acadèmica t'ha enviat un missatge clau, però no és a la safata principal. Explora les carpetes del correu i mou-lo a la Safata d'entrada.</p>
+      <div class="mail-app">
+        <div class="mail-folders" id="r4folders"></div>
+        <div class="mail-list" id="r4list"></div>
+      </div>
+      <div class="feedback" id="r4feedback"></div>
+      <div class="room-controls">
+        <button class="btn ghost" id="r4hintBtn">Necessito una pista</button>
+      </div>
+      <div class="hint-box" id="r4hint">Els correus legítims de vegades cauen, per error, a la carpeta de missatges "No desitjat". Revisa-la abans de donar per perdut un correu important.</div>
+    `;
+    document.getElementById('r4hintBtn').addEventListener('click', ()=>{
+      document.getElementById('r4hint').classList.add('show');
+    });
+    renderMailFolders();
+    renderMailList();
+  }
+
+  function renderMailFolders(){
+    const wrap = document.getElementById('r4folders');
+    wrap.innerHTML = '';
+    R4_FOLDERS.forEach(f=>{
+      const el = document.createElement('div');
+      el.className = 'folder' + (state.room4.folder===f.id ? ' active':'');
+      el.textContent = f.label;
+      el.tabIndex = 0;
+      el.addEventListener('click', ()=>{ state.room4.folder = f.id; renderMailFolders(); renderMailList(); });
+      wrap.appendChild(el);
+    });
+  }
+
+  function renderMailList(){
+    const wrap = document.getElementById('r4list');
+    wrap.innerHTML = '';
+    const mails = R4_MAIL[state.room4.folder] || [];
+    if(mails.length===0){
+      wrap.innerHTML = '<div class="empty-note">Aquesta carpeta és buida.</div>';
+      return;
+    }
+    mails.forEach((m, idx)=>{
+      const row = document.createElement('div');
+      row.className = 'mail-item';
+      row.innerHTML = `<div><span class="from">${m.from}</span> — <span class="subj">${m.subj}</span></div>`;
+      if(m.important){
+        const btn = document.createElement('button');
+        btn.className = 'move';
+        btn.type = 'button';
+        btn.textContent = 'Moure a Safata d\'entrada';
+        btn.addEventListener('click', ()=>{
+          registerAttempt();
+          R4_MAIL.spam = R4_MAIL.spam.filter(x=>x!==m);
+          R4_MAIL.inbox.unshift(m);
+          const fb = document.getElementById('r4feedback');
+          fb.className = 'feedback good show';
+          fb.textContent = 'Correu recuperat de la carpeta de no desitjat. Clau 4 desbloquejada.';
+          setTimeout(()=>goTo(5), 1100);
+        });
+        row.appendChild(btn);
+      }
+      wrap.appendChild(row);
+    });
+  }
+
+  /* ---------------- Room 5: Resolució de problemes ---------------- */
+  const R5_OPTIONS = [
+    {id:'a', text:'Garantir l\'accessibilitat web perquè tothom pugui entrar als serveis digitals.', correct:true},
+    {id:'b', text:'Aconseguir que totes les pàgines web tinguin exactament el mateix disseny visual.', correct:false},
+    {id:'c', text:'Reduir el nombre de colors disponibles a les interfícies digitals.', correct:false},
+    {id:'d', text:'Fer que tots els dispositius mòbils tinguin la mateixa mida de pantalla.', correct:false}
+  ];
+
+  function renderRoom5(){
+    panel.innerHTML = `
+      <div class="kicker">SALA 5 · ÀREA 5 — RESOLUCIÓ DE PROBLEMES</div>
+      <h2>L'últim pany del sistema</h2>
+      <p class="lede">Identifica quin d'aquests és realment un dels grans reptes de la transformació digital per obtenir la clau final.</p>
+      <div class="final-grid" id="r5list"></div>
+      <div class="feedback" id="r5feedback"></div>
+      <div class="room-controls">
+        <button class="btn ghost" id="r5hintBtn">Necessito una pista</button>
+      </div>
+      <div class="hint-box" id="r5hint">Pensa en qui es pot quedar fora si un servei digital no s'ha dissenyat pensant en totes les persones usuàries, també les que tenen alguna discapacitat.</div>
+    `;
+    const list = document.getElementById('r5list');
+    R5_OPTIONS.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'statement';
+      btn.type = 'button';
+      btn.textContent = opt.text;
+      btn.addEventListener('click', ()=>{
+        registerAttempt();
+        const fb = document.getElementById('r5feedback');
+        if(opt.correct){
+          fb.className = 'feedback good show';
+          fb.textContent = 'Correcte: l\'accessibilitat web és un dels grans reptes de la transformació digital. Obrint la sortida...';
+          stopTimer();
+          setTimeout(()=>goTo(6), 1200);
+        } else {
+          fb.className = 'feedback bad show';
+          fb.textContent = 'Aquest no és el repte clau. Torna-ho a intentar.';
+        }
+      });
+      list.appendChild(btn);
+    });
+    document.getElementById('r5hintBtn').addEventListener('click', ()=>{
+      document.getElementById('r5hint').classList.add('show');
+    });
+  }
+
+  /* ---------------- Victory ---------------- */
+  function renderVictory(){
+    const m = String(Math.floor(state.seconds/60)).padStart(2,'0');
+    const s = String(state.seconds%60).padStart(2,'0');
+    panel.innerHTML = `
+      <div class="victory">
+        <div class="badge">🎓</div>
+        <h2>Accés complet desbloquejat</h2>
+        <p class="lede" style="margin-left:auto;margin-right:auto;">Has demostrat les cinc competències digitals i el sistema ja t'ha donat pas al teu nou curs a l'Aula Digital.</p>
+        <div class="final-stats">
+          <div><b>${m}:${s}</b><small>TEMPS TOTAL</small></div>
+          <div><b>${state.attempts}</b><small>INTENTS</small></div>
+          <div><b>5/5</b><small>SALES SUPERADES</small></div>
+        </div>
+        <div class="campus-card">
+          <div class="cc-text">
+            <h3>Segueix explorant amb Campus Digital UIB</h3>
+            <p>Si vols aprofundir en aquestes competències o necessites ajuda amb l'Aula Digital (Moodle), l'equip de Campus Digital acompanya alumnat i professorat en tot el que fa referència a l'entorn virtual d'aprenentatge.</p>
+            <a class="btn accent" href="https://campusdigital.uib.cat/" target="_blank" rel="noopener">Visitar Campus Digital UIB</a>
+          </div>
+        </div>
+        <div style="margin-top:22px;">
+          <button class="btn ghost" id="restartBtn">Tornar a jugar</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('restartBtn').addEventListener('click', resetGame);
+  }
+
+  function resetGame(){
+    stopTimer();
+    state.currentRoom = 0;
+    state.attempts = 0;
+    state.seconds = 0;
+    state.room1 = {selected:null};
+    state.room2 = {answers:{}};
+    state.room3 = {selected:null, revealed:false};
+    state.room4 = {folder:'inbox'};
+    state.room5 = {selected:null};
+    R4_MAIL.spam = [
+      {from:'Secretaria Acadèmica UIB', subj:'IMPORTANT: verificació d\'accés al nou curs', important:true},
+      {from:'oferta-exclusiva@promos.net', subj:'Guanya un premi ara mateix'}
+    ];
+    R4_MAIL.inbox = [
+      {from:'Aula Digital UIB', subj:'Recordatori: entrega de la pràctica 3'},
+      {from:'Biblioteca UIB', subj:'El teu préstec venç demà'}
+    ];
+    timerDisplay.textContent = '00:00';
+    attemptsDisplay.textContent = '0';
+    renderRoute();
+    render();
+  }
+
+  /* ---------------- Init ---------------- */
+  renderRoute();
+  render();
+
+})();
+</script>
+</body>
+</html>
