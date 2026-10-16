@@ -1,0 +1,493 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pesos d'avaluació</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: capçalera curta, dues columnes (dades | resultats), plantilla emplenada a sota. */
+  :root {
+    --bg: #f2f5f7;
+    --surface: #ffffff;
+    --fg: #14202b;
+    --muted: #5a6b79;
+    --line: #d5dde3;
+    --accent: #0b6e8a;
+    --accent-fg: #ffffff;
+    --auto: #c27a0e;
+    --coev: #0b6e8a;
+    --prof: #4b4fa8;
+    --ok: #1d7a4a;
+    --warn: #a8420f;
+    --warn-bg: #fbeee6;
+    --ok-bg: #e5f3ec;
+    --code-bg: #eaeff2;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1419;
+      --surface: #151e25;
+      --fg: #e6edf2;
+      --muted: #93a4b1;
+      --line: #28353f;
+      --accent: #4cb9d6;
+      --accent-fg: #06141a;
+      --auto: #e3a64a;
+      --coev: #4cb9d6;
+      --prof: #9a9ee8;
+      --ok: #62c996;
+      --warn: #f0a074;
+      --warn-bg: #2d1c13;
+      --ok-bg: #12261c;
+      --code-bg: #0f171c;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1419;
+    --surface: #151e25;
+    --fg: #e6edf2;
+    --muted: #93a4b1;
+    --line: #28353f;
+    --accent: #4cb9d6;
+    --accent-fg: #06141a;
+    --auto: #e3a64a;
+    --coev: #4cb9d6;
+    --prof: #9a9ee8;
+    --ok: #62c996;
+    --warn: #f0a074;
+    --warn-bg: #2d1c13;
+    --ok-bg: #12261c;
+    --code-bg: #0f171c;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-block: 28px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  header h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(26px, 5vw, 36px);
+    line-height: 1.1;
+    margin: 0 0 6px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    min-width: 0;
+  }
+  .panel h2 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 14px;
+  }
+  .label-caps {
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .fields { display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-weight: 500; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .field label .sym { font-family: var(--font-mono); color: var(--muted); font-weight: 400; }
+  .input-row { position: relative; }
+  .input-row input {
+    width: 100%;
+    font: 500 17px var(--font-mono);
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 40px 9px 12px;
+    min-width: 0;
+  }
+  .input-row input.plain { padding-right: 12px; }
+  .input-row input[readonly] { color: var(--muted); cursor: default; }
+  .field label.check { display: flex; justify-content: flex-start; align-items: flex-start; gap: 8px; font-weight: 400; font-size: 13.5px; color: var(--muted); }
+  .field label.check input { margin-top: 3px; flex: none; accent-color: var(--accent); }
+  .input-row .unit {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-family: var(--font-mono); pointer-events: none;
+  }
+  input:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .hint { font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); min-height: 18px; }
+  .divider { height: 1px; background: var(--line); border: 0; margin: 4px 0; }
+
+  .status {
+    display: flex; gap: 8px; align-items: flex-start;
+    border-radius: 8px; padding: 10px 12px; font-size: 13.5px;
+    margin-top: 16px;
+  }
+  .status.ok { background: var(--ok-bg); color: var(--ok); }
+  .status.warn { background: var(--warn-bg); color: var(--warn); }
+  .status b { font-weight: 600; }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button {
+    font: 500 14px var(--font-body);
+    border-radius: 7px;
+    padding: 9px 14px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+  }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button:hover { filter: brightness(0.96); }
+
+  /* Resultats */
+  .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 440px) { .results { grid-template-columns: minmax(0, 1fr); } }
+  .res {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+  }
+  .res .name { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .res .val {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .res .calc { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .res.total { background: var(--bg); }
+
+  .bar-wrap { margin-top: 18px; }
+  .bar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); margin-top: 8px; }
+  .bar span { display: block; height: 100%; min-width: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+
+  /* Plantilla */
+  .tpl-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tpl-head h2 { margin: 0; }
+  pre {
+    margin: 0;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    font: 400 13px/1.55 var(--font-mono);
+    overflow-x: auto;
+    color: var(--fg);
+    tab-size: 4;
+  }
+  .toast { font-size: 13px; color: var(--ok); min-height: 20px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Pesos d'avaluació</h1>
+    <p>Calcula el pes de l'autoavaluació, de cada coevaluació i del professor a partir dels percentatges i del nombre de coevaluacions.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="h-dades">
+      <h2 id="h-dades">Dades</h2>
+      <div class="fields">
+        <div class="field">
+          <label for="pa">Autoavaluació <span class="sym">PA</span></label>
+          <div class="input-row"><input id="pa" type="text" inputmode="decimal" autocomplete="off" value="20"><span class="unit">%</span></div>
+          <div class="hint" id="pa-h"></div>
+        </div>
+        <div class="field">
+          <label for="pc">Coevaluació total <span class="sym">PC</span></label>
+          <div class="input-row"><input id="pc" type="text" inputmode="decimal" autocomplete="off" value="30"><span class="unit">%</span></div>
+          <div class="hint" id="pc-h"></div>
+        </div>
+        <div class="field">
+          <label for="pp">Professor <span class="sym">PP</span></label>
+          <div class="input-row"><input id="pp" type="text" inputmode="decimal" autocomplete="off" value="50"><span class="unit">%</span></div>
+          <div class="hint" id="pp-h"></div>
+        </div>
+        <hr class="divider">
+        <div class="field">
+          <label for="n">Nombre de coevaluacions <span class="sym">n</span></label>
+          <div class="input-row"><input id="n" class="plain" type="text" inputmode="decimal" autocomplete="off" value="3"></div>
+        </div>
+        <div class="field">
+          <label for="w">Pes de cada coevaluació <span class="sym">w</span></label>
+          <div class="input-row"><input id="w" class="plain" type="text" inputmode="decimal" autocomplete="off" value="1" readonly></div>
+          <label class="check" for="auto"><input id="auto" type="checkbox" checked> Calcula w automàticament perquè tots els pesos siguin enters</label>
+          <div class="hint" id="w-h"></div>
+        </div>
+      </div>
+      <div id="status" class="status ok" role="status"></div>
+      <div class="btn-row"><button type="button" id="reset">Restableix l'exemple</button></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-res">
+      <h2 id="h-res">Resultats finals</h2>
+      <div class="results" id="results"></div>
+      <div class="bar-wrap">
+        <div class="label-caps">Repartiment del pes total</div>
+        <div class="bar" id="bar" aria-hidden="true"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-tpl">
+    <div class="tpl-head">
+      <h2 id="h-tpl">Plantilla emplenada</h2>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span class="toast" id="toast" role="status"></span>
+        <button type="button" class="primary" id="copy">Copia la plantilla</button>
+      </div>
+    </div>
+    <pre id="tpl" tabindex="0"></pre>
+  </section>
+</div>
+
+<script>
+(function () {
+  var DEFAULTS = { pa: "20", pc: "30", pp: "50", n: "3", w: "1" };
+  var ids = ["pa", "pc", "pp", "n", "w"];
+  var el = {};
+  ids.forEach(function (k) { el[k] = document.getElementById(k); });
+  el.auto = document.getElementById("auto");
+  var nf = new Intl.NumberFormat("ca-ES", { maximumFractionDigits: 4, useGrouping: false });
+  var fmt = function (x) { return isFinite(x) ? nf.format(x) : "—"; };
+
+  function parse(s) {
+    var t = String(s).trim().replace(",", ".");
+    if (t === "") return NaN;
+    var v = Number(t);
+    return isFinite(v) ? v : NaN;
+  }
+
+  function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { var t = a % b; a = b; b = t; }
+    return a;
+  }
+  function isInt(x) { return isFinite(x) && Math.abs(x - Math.round(x)) < 1e-9; }
+
+  // Menor w enter positiu que fa enters T, A, P i C (percentatges amb fins a 2 decimals).
+  function minW(paPct, pcPct, ppPct, n) {
+    var a = Math.round(paPct * 100), c = Math.round(pcPct * 100), p = Math.round(ppPct * 100);
+    if (!(c > 0) || !(n > 0) || Math.floor(n) !== n || a < 0 || p < 0) return NaN;
+    var G = gcd(gcd(10000, a), p);
+    var k0 = c / gcd(c, G);
+    return k0 / gcd(k0, n);
+  }
+
+  function compute() {
+    var paPct = parse(el.pa.value), pcPct = parse(el.pc.value), ppPct = parse(el.pp.value);
+    var PA = paPct / 100, PC = pcPct / 100, PP = ppPct / 100;
+    var n = parse(el.n.value);
+    var auto = el.auto.checked;
+    var wMin = minW(paPct, pcPct, ppPct, n);
+    var w;
+    if (auto && isFinite(wMin)) { w = wMin; el.w.value = fmt(wMin); }
+    else { w = parse(el.w.value); }
+    var valid = [PA, PC, PP, n, w].every(function (v) { return isFinite(v); });
+    var out = { PA: PA, PC: PC, PP: PP, n: n, w: w, wMin: wMin, auto: auto, valid: valid };
+    if (valid && PC > 0 && n > 0 && w > 0) {
+      out.C = n * w;
+      out.T = out.C / PC;
+      out.A = PA * out.T;
+      out.P = PP * out.T;
+      out.ok = true;
+      out.intOk = [out.C, out.T, out.A, out.P, w].every(isInt);
+    } else {
+      out.ok = false;
+      out.intOk = false;
+    }
+    return out;
+  }
+
+  function hint(id, v) {
+    document.getElementById(id).textContent = isFinite(v) ? "= " + fmt(v) + " en decimal" : "";
+  }
+
+  function render() {
+    var r = compute();
+    hint("pa-h", r.PA); hint("pc-h", r.PC); hint("pp-h", r.PP);
+
+    // Estat
+    var st = document.getElementById("status");
+    var sum = r.PA + r.PC + r.PP;
+    var msgs = [];
+    if (!r.valid) msgs.push("Omple tots els camps amb números.");
+    else {
+      if (!(r.PC > 0)) msgs.push("El percentatge de coevaluació ha de ser major que 0.");
+      if (!(r.n > 0)) msgs.push("El nombre de coevaluacions ha de ser major que 0.");
+      if (!(r.w > 0)) msgs.push("El pes de cada coevaluació ha de ser major que 0.");
+      if (r.n > 0 && Math.floor(r.n) !== r.n) msgs.push("El nombre de coevaluacions ha de ser enter perquè els pesos ho siguin.");
+      if (Math.abs(sum - 1) > 1e-9) msgs.push("Els tres percentatges sumen " + fmt(sum * 100) + "% i haurien de sumar 100%.");
+      if (r.ok && !r.intOk && isFinite(r.wMin)) {
+        msgs.push("Amb w = " + fmt(r.w) + " hi ha pesos amb decimals. Amb w = " + fmt(r.wMin) + " tots els pesos són enters (marca el càlcul automàtic).");
+      }
+    }
+    if (msgs.length) {
+      st.className = "status warn";
+      st.innerHTML = "<span><b>Revisa:</b> " + msgs.join(" ") + "</span>";
+    } else {
+      st.className = "status ok";
+      st.innerHTML = "<span><b>Correcte.</b> Els percentatges sumen 100% i tots els pesos són enters.</span>";
+    }
+    document.getElementById("w-h").textContent = r.auto
+      ? (isFinite(r.wMin) ? "Calculat: el menor enter que fa tots els pesos enters" : "Es calcularà quan les dades siguin vàlides")
+      : "Normalment 1";
+    el.w.readOnly = r.auto;
+
+    // Targetes
+    var calcA = r.ok ? "A = " + fmt(r.PA) + " · " + fmt(r.T) : "";
+    var calcP = r.ok ? "P = " + fmt(r.PP) + " · " + fmt(r.T) : "";
+    var calcT = r.ok ? "T = " + fmt(r.C) + " / " + fmt(r.PC) : "";
+    var calcW = r.ok ? "C = " + fmt(r.n) + " · " + fmt(r.w) + " = " + fmt(r.C) + " en total" : "";
+    var cards = [
+      { c: "var(--auto)", n: "Pes autoavaluació", v: r.ok ? fmt(r.A) : "—", k: calcA },
+      { c: "var(--coev)", n: "Pes de cada coevaluació", v: r.ok ? fmt(r.w) : "—", k: calcW },
+      { c: "var(--prof)", n: "Pes professor", v: r.ok ? fmt(r.P) : "—", k: calcP },
+      { c: "var(--fg)", n: "Pes total", v: r.ok ? fmt(r.T) : "—", k: calcT, total: true }
+    ];
+    document.getElementById("results").innerHTML = cards.map(function (c) {
+      return '<div class="res' + (c.total ? " total" : "") + '"><div class="name"><span class="swatch" style="background:' + c.c + '"></span>' + c.n + '</div><div class="val">' + c.v + '</div><div class="calc">' + (c.k || "&nbsp;") + '</div></div>';
+    }).join("");
+
+    // Barra
+    var parts = [
+      { n: "Autoavaluació", v: r.PA, c: "var(--auto)" },
+      { n: "Coevaluació", v: r.PC, c: "var(--coev)" },
+      { n: "Professor", v: r.PP, c: "var(--prof)" }
+    ];
+    var tot = parts.reduce(function (a, p) { return a + (p.v > 0 ? p.v : 0); }, 0);
+    document.getElementById("bar").innerHTML = tot > 0 ? parts.map(function (p) {
+      var wpc = p.v > 0 ? (p.v / tot * 100) : 0;
+      return '<span style="width:' + wpc + '%;background:' + p.c + '"></span>';
+    }).join("") : "";
+    document.getElementById("legend").innerHTML = parts.map(function (p) {
+      return '<span><i class="swatch" style="background:' + p.c + '"></i>' + p.n + " " + (isFinite(p.v) ? fmt(p.v * 100) + "%" : "—") + "</span>";
+    }).join("");
+
+    // Plantilla
+    document.getElementById("tpl").textContent = template(r);
+  }
+
+  function pad(label, width) { return label + new Array(Math.max(1, width - label.length + 1)).join(" "); }
+
+  function template(r) {
+    var d = function (x) { return isFinite(x) ? fmt(x) : "______"; };
+    var res = function (x) { return r.ok ? fmt(x) : "______"; };
+    var L = [];
+    L.push("-----------------------------");
+    L.push("     CONFIGURACIÓ D'AVALUACIÓ");
+    L.push("-----------------------------");
+    L.push("");
+    L.push(pad("Percentatge autoavaluació (PA):", 34) + d(r.PA));
+    L.push(pad("Percentatge coevaluació (PC):", 34) + d(r.PC));
+    L.push(pad("Percentatge professor (PP):", 34) + d(r.PP));
+    L.push("");
+    L.push(pad("Nombre de coevaluacions (n):", 34) + d(r.n));
+    L.push(pad("Pes de cada coevaluació (w):", 34) + d(r.w));
+    L.push("");
+    L.push("");
+    L.push("-----------------------------");
+    L.push("          CÀLCULS");
+    L.push("-----------------------------");
+    L.push("");
+    L.push("1. Pes total del sistema:");
+    L.push("   T = (n · w) / PC");
+    L.push("   → T = (" + d(r.n) + " · " + d(r.w) + ") / " + d(r.PC) + " = " + res(r.T));
+    L.push("");
+    L.push("");
+    L.push("2. Pes de l'autoavaluació:");
+    L.push("   A = PA · T");
+    L.push("   → A = " + d(r.PA) + " · " + res(r.T) + " = " + res(r.A));
+    L.push("");
+    L.push("");
+    L.push("3. Pes del professor:");
+    L.push("   P = PP · T");
+    L.push("   → P = " + d(r.PP) + " · " + res(r.T) + " = " + res(r.P));
+    L.push("");
+    L.push("");
+    L.push("4. Pes total coevaluacions:");
+    L.push("   C = n · w");
+    L.push("   → C = " + d(r.n) + " · " + d(r.w) + " = " + res(r.C));
+    L.push("");
+    L.push("");
+    L.push("-----------------------------");
+    L.push("      RESULTATS FINALS");
+    L.push("-----------------------------");
+    L.push("");
+    L.push(pad("Pes autoavaluació:", 26) + res(r.A));
+    L.push(pad("Pes de cada coevaluació:", 26) + res(r.w));
+    L.push(pad("Pes professor:", 26) + res(r.P));
+    L.push(pad("Pes total:", 26) + res(r.T));
+    return L.join("\n");
+  }
+
+  // Esdeveniments
+  ids.forEach(function (k) { el[k].addEventListener("input", render); });
+  el.auto.addEventListener("change", render);
+  document.getElementById("reset").addEventListener("click", function () {
+    ids.forEach(function (k) { el[k].value = DEFAULTS[k]; });
+    el.auto.checked = true;
+    render();
+  });
+
+  var toast = document.getElementById("toast");
+  var toastTimer;
+  function say(msg) {
+    toast.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.textContent = ""; }, 2500);
+  }
+  function selectPre() {
+    var pre = document.getElementById("tpl");
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = document.getElementById("tpl").textContent;
+    var p;
+    try { p = navigator.clipboard.writeText(text); } catch (e) { p = Promise.reject(e); }
+    p.then(function () { say("Plantilla copiada"); })
+     .catch(function () { selectPre(); say("Text seleccionat: prem Ctrl+C per copiar"); });
+  });
+
+  render();
+})();
+</script>
+
+</body></html>
